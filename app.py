@@ -37,6 +37,69 @@ def create_note():
     db.session.commit()
     return jsonify({"Message":"Note created successfully"})
 
+@app.route('/api/get_notes', methods=['GET'])
+def get_notes():
+    notes = Note.query.all()
+    all_notes = []
+    for note in notes:
+        single_note={
+            "id":note.id,
+            "title":note.title,
+            "content":note.content
+            }
+        all_notes.append(single_note)
+        print(all_notes)
+        return jsonify({"notes":all_notes})
+    print(notes)
+    return "api to get all data"
+    
+
+@app.route('/api/note/<int:id>', methods=['GET'])
+def get_note(id):  # sourcery skip: use-named-expression
+    note = Note.query.get(id)
+    if note:
+        single_note = {
+            "id": note.id,
+            "title": note.title,
+            "content": note.content
+            }
+        return jsonify(single_note)
+    else:
+        return jsonify({"error": "Note not found"})
+
+
+@app.route('/api/note/<int:id>', methods=['DELETE'])
+def delete_note(id):
+    note = Note.query.get(id)
+    if note:
+        db.session.delete(note)
+        db.session.commit()
+        return jsonify({"Message":"Note deleted successfully"})
+    else:
+        return jsonify({"error": "Note not found"})
+    
+
+
+@app.route('/api/note/<int:id>', methods=['GET', 'POST'])
+def update_note(id):
+    # sourcery skip: remove-unnecessary-else, swap-if-else-branches, switch
+    note = Note.query.get(id)
+    if note:
+        if request.method == 'POST':
+            note.title = request.json.get('title', note.title)  
+            note.content = request.json.get('content', note.content)  
+            db.session.commit()
+            return jsonify({"message": "Note updated successfully"})
+        
+        elif request.method == 'GET':
+            single_note = {
+                "id": note.id,
+                "title": note.title,
+                "content": note.content
+            }
+            return jsonify(single_note), 
+    else:
+        return jsonify({"error": "Note not found"})
 
 
 if __name__ == '__main__':
